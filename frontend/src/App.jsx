@@ -40,8 +40,8 @@ function App() {
   const [selectedStore, setSelectedStore] = useState(null);
 
   const [deliveryZone, setDeliveryZone] = useState({
-    lat: 13.8145263,
-    lng: 100.04178689,
+    lat: null,
+    lng: null,
     radius: 1000,
   });
 
@@ -55,10 +55,7 @@ function App() {
 
     const a =
       Math.sin(delta_phi / 2) * Math.sin(delta_phi / 2) +
-      Math.cos(phi_1) *
-        Math.cos(phi_2) *
-        Math.sin(delta_lambda / 2) *
-        Math.sin(delta_lambda / 2);
+      Math.cos(phi_1) * Math.cos(phi_2) * Math.sin(delta_lambda / 2) * Math.sin(delta_lambda / 2);
 
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c; // Distance in meters
@@ -98,32 +95,35 @@ function App() {
       });
       return;
     }
-    if (!deliveryZone.lat || !deliveryZone.lng) {
+
+    if (!selectedStore) {
       Swal.fire({
         title: "Error!",
-        text: "Please enter your valid Store Location",
+        text: "Please select a store",
         icon: "error",
         confirmButtonText: "OK",
       });
       return;
     }
+
     const distance = calculateDistance(
       myLocation.lat,
       myLocation.lng,
-      deliveryZone.lat,
-      deliveryZone.lng
+      selectedStore.lat,
+      selectedStore.lng
     );
+
     if (distance <= deliveryZone.radius) {
       Swal.fire({
         title: "Success",
-        text: "You are within the delivery zone",
+        text: "You are within the delivery zone for " + selectedStore.name,
         icon: "success",
         confirmButtonText: "OK",
       });
     } else {
       Swal.fire({
         title: "Error!",
-        text: "You are outside the delivery zone",
+        text: "You are outside the delivery zone for " + selectedStore.name,
         icon: "error",
         confirmButtonText: "OK",
       });
@@ -141,12 +141,7 @@ function App() {
       </button>
 
       <div>
-        <MapContainer
-          center={center}
-          zoom={13}
-          scrollWheelZoom={true}
-          style={{ height: "75vh", width: "100vw" }}
-        >
+        <MapContainer center={center} zoom={13} scrollWheelZoom={true} style={{ height: "75vh", width: "100vw" }}>
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -157,11 +152,7 @@ function App() {
               <Marker
                 key={store.id}
                 position={[store.lat, store.lng]}
-                icon={
-                  selectedStore && selectedStore.id === store.id
-                    ? selectedStoreIcon
-                    : storeIcon
-                } // เปลี่ยนไอคอนถ้ามีการเลือก
+                icon={selectedStore && selectedStore.id === store.id ? selectedStoreIcon : storeIcon} // เปลี่ยนไอคอนถ้ามีการเลือก
                 eventHandlers={{
                   click: () => {
                     setSelectedStore(store); // Set selected store
@@ -183,12 +174,7 @@ function App() {
           />
 
           {selectedStore && (
-            <Marker
-              position={[selectedStore.lat, selectedStore.lng]}
-              icon={selectedStoreIcon}
-            >
-              {" "}
-              {/* ใช้ selectedStoreIcon */}
+            <Marker position={[selectedStore.lat, selectedStore.lng]} icon={selectedStoreIcon}> {/* ใช้ selectedStoreIcon */}
               <Popup>
                 <b>{selectedStore.name}</b>
                 <p>{selectedStore.address}</p>
