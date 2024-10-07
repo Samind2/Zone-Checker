@@ -1,19 +1,21 @@
 import React, { useEffect, useState } from "react";
-import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  Popup,
-  useMapEvent,
-} from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+
 import axios from "axios";
 import "leaflet/dist/leaflet.css";
 import "./App.css";
 import L from "leaflet";
 import Swal from "sweetalert2";
+import LocationMap from "./component/LocationMap"; // Import LocationMap component
 
 const base_url = import.meta.env.VITE_API_BASE_URL;
 
+const MapIcon = new L.Icon({
+  iconUrl: "https://cdn-icons-png.flaticon.com/128/11891/11891781.png", // URL for house icon
+  iconSize: [38, 38], // size of the icon
+  iconAnchor: [22, 38], // point of the icon which will correspond to marker's location
+  popupAnchor: [0, -40], // point from which the popup should open relative to the iconAnchor
+});
 // Define custom icon for house
 const houseIcon = new L.Icon({
   iconUrl: "https://cdn-icons-png.flaticon.com/128/619/619153.png", // URL for house icon
@@ -26,6 +28,7 @@ function App() {
   const center = [13.838500199744178, 100.02534412184882];
   const [stores, setStores] = useState([]);
   const [myLocation, setMylocation] = useState({ lat: "", lng: "" });
+  const [selectedStore, setSelectedStore] = useState(null); // Store selected location
 
   const [deliveryZone, setDeliveryZone] = useState({
     lat: 13.8145263, //ว่องพชรพันธ์
@@ -52,6 +55,7 @@ function App() {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c; //Distance in  meters
   };
+
   useEffect(() => {
     const fetchStores = async () => {
       try {
@@ -67,16 +71,6 @@ function App() {
     fetchStores();
   }, []);
 
-  const LocationMap = () => {
-    useMapEvent({
-      click(e) {
-        const { lat, lng } = e.latlng;
-        setMylocation({ lat, lng });
-      },
-    });
-    return null; // Return null since we don't need to render anything
-  };
-
   const handlerGetLocation = () => {
     navigator.geolocation.getCurrentPosition((position) => {
       setMylocation({
@@ -85,8 +79,9 @@ function App() {
       });
     });
   };
+
   const handleLocationCheck = () => {
-    if (!myLocation.lat === "" || myLocation.lng === "") {
+    if (!myLocation.lat || !myLocation.lng) {
       Swal.fire({
         title: "Error!",
         text: "Please enter your valid location",
@@ -95,7 +90,7 @@ function App() {
       });
       return;
     }
-    if (deliveryZone.lat === "" || deliveryZone.lng === "") {
+    if (!deliveryZone.lat || !deliveryZone.lng) {
       Swal.fire({
         title: "Error!",
         text: "Please enter your valid Store Location",
@@ -110,17 +105,17 @@ function App() {
       deliveryZone.lat,
       deliveryZone.lng
     );
-    if(distance <= deliveryZone.radius){
+    if (distance <= deliveryZone.radius) {
       Swal.fire({
         title: "Success",
-        text: "You are within the derivery zone",
+        text: "You are within the delivery zone",
         icon: "success",
         confirmButtonText: "OK",
       });
-    }else{
+    } else {
       Swal.fire({
         title: "Error!",
-        text: "You are outside the derivery zone",
+        text: "You are outside the delivery zone",
         icon: "error",
         confirmButtonText: "OK",
       });
@@ -134,7 +129,7 @@ function App() {
         Get My Location
       </button>
       <button className="get-location-btn" onClick={handleLocationCheck}>
-        Check Delivery Availabiliy
+        Check Delivery Availability
       </button>
 
       <div>
@@ -148,16 +143,18 @@ function App() {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          <Marker
-            position={[myLocation.lat, myLocation.lng]}
-            icon={houseIcon} // ใช้ houseIcon ใน Marker ที่ถูกต้อง
-          >
-            <Popup>My Current Location</Popup>
-          </Marker>
 
           {stores.length > 0 &&
             stores.map((store) => (
-              <Marker key={store.id} position={[store.lat, store.lng]}>
+              <Marker
+                key={store.id}
+                position={[store.lat, store.lng]}
+                eventHandlers={{
+                  click: () => {
+                    setSelectedStore(store); // Set selected store
+                  },
+                }}
+              >
                 <Popup>
                   <b>{store.name}</b>
                   <p>{store.address}</p>
@@ -166,7 +163,24 @@ function App() {
               </Marker>
             ))}
 
-          <LocationMap />
+          <LocationMap
+            myLocation={myLocation}
+            icon={houseIcon}
+            onLocationSelect={setMylocation}
+          />
+
+          {/* Optional: Add selected store marker if any */}
+          {selectedStore && (
+            <Marker
+              position={[selectedStore.lat, selectedStore.lng]}
+              icon={MapIcon}
+            >
+              <Popup>
+                <b>{selectedStore.name}</b>
+                <p>{selectedStore.address}</p>
+              </Popup>
+            </Marker>
+          )}
         </MapContainer>
       </div>
     </>

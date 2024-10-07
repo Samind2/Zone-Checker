@@ -1,12 +1,11 @@
 import React from "react";
 import { Marker, Popup, useMapEvent } from "react-leaflet";
 
-const LocationMap = ({ myLocation, setMylocation, icon }) => {
-  // useMapEvent เพื่อฟังการคลิกบนแผนที่แล้วตั้งค่าตำแหน่งใหม่
+const LocationMap = ({ myLocation, icon, onLocationSelect }) => {
   useMapEvent({
     click(e) {
       const { lat, lng } = e.latlng;
-      setMylocation({ lat, lng }); // อัปเดตตำแหน่งบ้านของผู้ใช้
+      onLocationSelect({ lat, lng }); // Pass selected location to parent
     },
   });
 
@@ -14,7 +13,7 @@ const LocationMap = ({ myLocation, setMylocation, icon }) => {
     <>
       {myLocation.lat && myLocation.lng && (
         <Marker position={[myLocation.lat, myLocation.lng]} icon={icon}>
-          <Popup>Your Current Location</Popup>
+          <Popup>My Current Location</Popup>
         </Marker>
       )}
     </>
