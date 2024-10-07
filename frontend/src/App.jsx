@@ -141,7 +141,12 @@ function App() {
       </button>
 
       <div>
-        <MapContainer center={center} zoom={13} scrollWheelZoom={true} style={{ height: "75vh", width: "100vw" }}>
+        <MapContainer
+          center={center}
+          zoom={13}
+          scrollWheelZoom={true}
+          style={{ height: "75vh", width: "100vw" }}
+        >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -152,7 +157,11 @@ function App() {
               <Marker
                 key={store.id}
                 position={[store.lat, store.lng]}
-                icon={selectedStore && selectedStore.id === store.id ? selectedStoreIcon : storeIcon} // เปลี่ยนไอคอนถ้ามีการเลือก
+                icon={
+                  selectedStore && selectedStore.id === store.id
+                    ? selectedStoreIcon
+                    : storeIcon
+                } // เปลี่ยนไอคอนถ้ามีการเลือก
                 eventHandlers={{
                   click: () => {
                     setSelectedStore(store); // Set selected store
@@ -162,6 +171,7 @@ function App() {
                 <Popup>
                   <b>{store.name}</b>
                   <p>{store.address}</p>
+                  <p>Delivery Radius: {store.radius} meters</p>
                   <a href={store.direction}>Get Direction</a>
                 </Popup>
               </Marker>
@@ -174,10 +184,15 @@ function App() {
           />
 
           {selectedStore && (
-            <Marker position={[selectedStore.lat, selectedStore.lng]} icon={selectedStoreIcon}> {/* ใช้ selectedStoreIcon */}
+            <Marker
+              position={[selectedStore.lat, selectedStore.lng]}
+              icon={selectedStoreIcon}
+            >
+              {/* ใช้ selectedStoreIcon */}
               <Popup>
                 <b>{selectedStore.name}</b>
                 <p>{selectedStore.address}</p>
+                <p>Delivery Radius: {selectedStore.radius} meters</p>
               </Popup>
             </Marker>
           )}
