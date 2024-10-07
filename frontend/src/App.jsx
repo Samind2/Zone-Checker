@@ -9,8 +9,17 @@ import {
 import axios from "axios";
 import "leaflet/dist/leaflet.css";
 import "./App.css";
+import L from "leaflet";
 
 const base_url = import.meta.env.VITE_API_BASE_URL;
+
+// Define custom icon for house
+const houseIcon = new L.Icon({
+  iconUrl: "https://cdn-icons-png.flaticon.com/512/69/69524.png", // URL for house icon
+  iconSize: [38, 38], // size of the icon
+  iconAnchor: [22, 38], // point of the icon which will correspond to marker's location
+  popupAnchor: [0, -40], // point from which the popup should open relative to the iconAnchor
+});
 
 function App() {
   const center = [13.838500199744178, 100.02534412184882];
@@ -66,13 +75,19 @@ function App() {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          <Marker position={[myLocation.lat, myLocation.lng]}>
+          <Marker
+            position={[myLocation.lat, myLocation.lng]}
+            icon={houseIcon} // ใช้ houseIcon ใน Marker ที่ถูกต้อง
+          >
             <Popup>My Current Location</Popup>
           </Marker>
 
           {stores.length > 0 &&
             stores.map((store) => (
-              <Marker key={store.id} position={[store.lat, store.lng]}>
+              <Marker
+                key={store.id}
+                position={[store.lat, store.lng]}
+              >
                 <Popup>
                   <b>{store.name}</b>
                   <p>{store.address}</p>
